@@ -83,6 +83,7 @@ A paleta deriva **diretamente da marca TRC** (orange `#DB592A` + blue `#2563B5` 
 --brand-primary-pressed:#A8431E;
 --brand-primary-soft:   #FBEEE5;  /* tinted background */
 --brand-primary-line:   #DB592A;  /* border accent */
+--brand-primary-deeper: #8E3A1A;  /* S162 added — emphasis em sub-brand, nao usado em Phase 1 */
 
 /* TRC secondary brand — azul institucional (do logo) */
 --brand-secondary:        #2563B5;
