@@ -146,7 +146,7 @@ Se `initials` nao fornecido:
   line-height: 1;
 }
 .construtora-indicator[data-variant="chip"] .ci-name {
-  font-family: var(--font-ui);
+  font-family: var(--font-sans);
   font-weight: 600;
 }
 

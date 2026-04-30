@@ -157,7 +157,7 @@ Decisao deliberada: na maioria das telas, primary CTA e laranja `--brand-primary
 }
 
 .adf-subtitle {
-  font-family: var(--font-ui);
+  font-family: var(--font-sans);
   font-size: var(--text-body);
   font-weight: 500;
   color: var(--text-tertiary);
@@ -172,7 +172,7 @@ Decisao deliberada: na maioria das telas, primary CTA e laranja `--brand-primary
 }
 
 .adf-reasoning-title {
-  font-size: var(--text-h4);
+  font-size: var(--text-h3);
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;

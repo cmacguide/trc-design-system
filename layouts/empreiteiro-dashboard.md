@@ -40,7 +40,7 @@ Template de pagina para `/empreiteiro/` (Tela 1). Padrao **Featured Action + Com
 - **Section spacing:** `var(--space-6)` entre Header / Hero / Lista
 - **Hero margin:** `var(--space-4)` lateral, `var(--space-5)` top
 - **Lista section:**
-  - Title "Outras construtoras" — `--text-h4` Plus Jakarta 600, color `--text-secondary`, padding `var(--space-3) var(--space-4)`
+  - Title "Outras construtoras" — `--text-h3` Plus Jakarta 600, color `--text-secondary`, padding `var(--space-3) var(--space-4)`
   - Container — `var(--surface-secondary)` background com `var(--radius-3)` corner radius
   - Item — display flex, align center, gap `var(--space-3)`, padding `var(--space-3) var(--space-4)`, border-bottom `1px solid var(--border-subtle)` (last child sem border)
   - Item layout: `[StatusDot] [ConstrutoraNome (flex 1)] [ConstrutoraIndicator badge]`
@@ -145,7 +145,7 @@ Template de pagina para `/empreiteiro/` (Tela 1). Padrao **Featured Action + Com
 }
 
 .ed-list-title {
-  font-size: var(--text-h4);
+  font-size: var(--text-h3);
   font-weight: 600;
   color: var(--text-secondary);
   padding: 0 var(--space-4);

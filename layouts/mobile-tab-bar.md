@@ -137,7 +137,7 @@ Badge apenas em `Documentos` e `Alertas`. Posicao: top-right do icone (offset `-
 }
 
 .tab-label {
-  font-family: var(--font-ui);
+  font-family: var(--font-sans);
   font-size: var(--text-caption);
   font-weight: 500;
   line-height: 1;
