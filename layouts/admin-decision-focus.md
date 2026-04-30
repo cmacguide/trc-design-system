@@ -42,7 +42,7 @@ Coluna central com max-width **responsivo + tratamento atmosferico nas laterais 
 | Mobile (<768px) | 100% | `--column-fluid` | n/a (sem laterais) |
 | Tablet (768-1023px) | 640px | `--column-reading` | `--surface-bg` puro |
 | Desktop (1024-1439px) | 720px | `--column-decision` | `--surface-bg` puro + sidebar app 240px a esquerda |
-| Wide (>=1440px) | **920px** | `--column-spread` | **column elevation subtle** + technical-grid texture nas laterais (ver "Wide treatment" abaixo) |
+| Wide (>=1440px) | **920px** | `--column-spread` | **column elevation hairline soh** (ver "Wide treatment" abaixo) — laterais permanecem `--surface-bg` puro, SEM textura decorativa |
 
 **Por que 920px e NAO 1024+ no wide:** acima de 960px a coluna comeca a ter peso de dashboard (perde "uma decisao por vez"). 920px e o ponto onde DualValueCard tem ~440px por lado (confortavel para "EMPREITEIRO aguarda R$ 142.300" + subtitle sem aperto), mantendo asimetria 48/52% que o cerebro percebe como **intencional** (50/50 simetrico = "Bootstrap container").
 
@@ -64,7 +64,7 @@ Coluna central com max-width **responsivo + tratamento atmosferico nas laterais 
   - Mobile (<768px): width 100% (`--column-fluid`), padding `var(--space-6) var(--space-4)` (top/bottom 32px, lateral 16px)
   - Tablet (768-1023px): max-width 640px (`--column-reading`), margin auto, padding `var(--space-7) var(--space-5)`
   - Desktop (1024-1439px): max-width 720px (`--column-decision`), margin auto, padding `var(--space-8) var(--space-6)`
-  - Wide (>=1440px): max-width 920px (`--column-spread`), margin auto, padding `var(--space-8) var(--space-7)`, com **column elevation subtle** + atmospheric grid lateral (ver "Wide treatment")
+  - Wide (>=1440px): max-width 920px (`--column-spread`), margin auto, padding `var(--space-8) var(--space-7)`, com **column elevation hairline subtle** apenas (ver "Wide treatment" — sem grid lateral decorativo)
 - **BreadcrumbStack:** padding `var(--space-3) 0`
 - **Header (titulo + subtitulo):**
   - H1 — `--text-h2` Fraunces 700 (display weight, 30-32px), color `--text-primary`. Texto inclui o **valor R$** in-line porque e o sujeito da decisao
@@ -145,26 +145,16 @@ Decisao deliberada: na maioria das telas, primary CTA e laranja `--brand-primary
 </main>
 ```
 
-## Wide screen treatment (>=1440px)
+## Wide screen treatment (>=1440px) — REVISADO S163b
 
-Para evitar "coluna estreita perdida no monitor wide", aplicar **textura tecnica subtle** nas laterais + elevation hairline na coluna. Evoca papel tecnico de engenharia (industrial/utilitarian aesthetic alinhado a TRC compliance trabalhista) sem cair em "decorative SaaS gradient" (anti-pattern #4 ja documentado).
+> **Validacao S163b:** esta secao + Action row + anti-patterns adicionados foram validados via canary HTML preview pre-push em `trc-platform/docs/assets/preview/admin-tela-1-v4-preview.html` (substituto #7 visual decision pre-validation).
+
+**Audience-fit decision (S163b):** o tratamento original previa "atmospheric grid lateral / technical-paper texture" para evocar papel tecnico de engenharia. Validacao empirica via canary HTML preview revelou: **audience real (gestor Construtora, compliance officer) NAO processa blueprints diariamente** — semantica "papel tecnico" nao le, decoracao vira ruido percebido como "estranho/bug" em ferramenta de decisao corporativa. Ver anti-pattern explicito abaixo.
+
+**Tratamento revisado (mantido):** apenas **column elevation hairline subtle** delimitando a area de decisao focada. Sem texturas decorativas. As laterais permanecem `--surface-bg` puro.
 
 ```css
 @media (min-width: 1440px) {
-  .admin-decision-focus {
-    /* Lateral technical-paper texture (subtle, nao decorativa) */
-    background:
-      var(--surface-bg)
-      repeating-linear-gradient(
-        90deg,
-        transparent 0,
-        transparent 80px,
-        var(--border-subtle) 80px,
-        var(--border-subtle) 81px
-      );
-    background-blend-mode: multiply;
-  }
-
   .adf-column {
     background: var(--surface-bg);
     box-shadow:
@@ -174,7 +164,46 @@ Para evitar "coluna estreita perdida no monitor wide", aplicar **textura tecnica
 }
 ```
 
-**Anti-pattern explicito para evitar:** NAO substituir esse tratamento por dropshadow simetrico (vide NAO#8), gradient meshes (vide NAO#4), ou colored backgrounds. Se a lateral precisar de mais presenca, adicionar mais espessura a grid (ex: 79px+82px), nunca trocar a textura.
+**Por que apenas hairline (e nada mais):** o hairline cumpre **funcao** (sinaliza "esta e a area da decisao") sem **decorar**. Texturas, gradientes, padroes verticais nas laterais cumprem funcao zero para audience compliance — sao soh "design language" sem semantic carrying. Hairline e o **minimo absoluto** que comunica "regiao focada" e ainda funciona em qualquer audience.
+
+**Por que coluna nao precisa de mais presenca em wide:** com `--surface-bg` em `#FAFAF9` (warm-grey near-white, ver tokens.md surface palette) e `.adf-column` em `var(--surface-elevated)` `#FFFFFF`, ja existe **value contrast natural ~1-2%** entre coluna e laterais. O hairline reforca esse contraste. Atmosfera vem de **value layering**, nao de decoracao explicita.
+
+## Action row (CTAs primary + secondary) — responsive
+
+`Notificar empreiteiro` (primary) + `Ver auditoria` (secondary) ficam **side-by-side em desktop+** mas precisam **stack vertical em mobile** porque coluna 100% width nao acomoda 2 botoes confortavelmente (cada um com texto longo, primary "Notificar empreiteiro -- enviar checklist").
+
+```css
+.adf-actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+.adf-actions > button {
+  flex: 1;
+  min-width: 0;
+  white-space: normal;       /* permite wrap natural */
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 767px) {
+  .adf-actions {
+    flex-direction: column;
+  }
+}
+```
+
+**Por que `flex: 1` + `min-width: 0`:** sem `min-width: 0`, flex children nao encolhem abaixo do conteudo intrinsic — texto longo "Notificar empreiteiro -- enviar checklist" forca botao >300px width, comprimindo "Ver auditoria" em ~80px e cortando texto. `min-width: 0` permite shrink ate fit container.
+
+**Anti-pattern catched S163b:** sem `flex-direction: column` em mobile, primary CTA "Notificar empreiteiro" + secondary "Ver auditoria" lado-a-lado em coluna 412px-padding=380px deu primary ~280px + secondary ~80px, secondary ficou cortado ("Ver / auditoria"). Stack vertical com cada CTA full-width resolve.
+
+## Anti-patterns Wide treatment (concept × forbidden × required substitute)
+
+| Concept | Forbidden | Required substitute |
+|---|---|---|
+| Atmosfera lateral wide | `repeating-linear-gradient` blueprint texture, gradient meshes, padroes verticais decorativos | **Apenas `--surface-bg` puro** + column elevation hairline. Atmosfera vem de **value layering** (ground vs card), nao decoracao explicita |
+| Justificativa "papel tecnico engenharia" | Aplicar para audience compliance trabalhista | **Audience real e gestor Construtora + compliance officer** — processam planilhas/PDFs/emails, NAO blueprints. Semantica "papel tecnico" nao le. Decoracao = ruido |
+| Column delimitation wide | Drop-shadow generic, colored borders, dropshadow simetrico | **`box-shadow: inset 0 0 0 1px var(--border-subtle)`** (hairline subtle) — funcional sem decorativo |
+| CTAs em mobile | `flex-direction: row` herdado do desktop | **`flex-direction: column`** em `<768px`, cada CTA `width: 100%` + texto sentence-wrap |
 
 ## CSS
 
@@ -208,7 +237,7 @@ Para evitar "coluna estreita perdida no monitor wide", aplicar **textura tecnica
   .adf-column {
     max-width: var(--column-spread); /* 920px */
     padding: var(--space-8) var(--space-7);
-    background: var(--surface-bg);
+    background: var(--surface-elevated); /* white card sobre --surface-bg ground = value contrast */
     box-shadow:
       inset 0 0 0 1px var(--border-subtle),
       0 1px 0 var(--border-subtle);
@@ -300,6 +329,8 @@ Modal usa `--elev-modal` token, backdrop `--z-modal-bg` overlay 60% escuro.
 - NAO usar gradientes em background ou cards — viola anti-pattern #4
 - NAO mostrar override link como CTA principal — deve ser visualmente subdued
 - NAO usar emoji em titulo ou subtitle — viola anti-pattern #6
+- NAO aplicar texturas/padroes verticais nas laterais wide — viola NAO#9 (layout viewport-naive expandido S163b: decoracao audience-misfit) e o subset Wide-treatment table acima. Audience compliance NAO le "papel tecnico engenharia" como semantica
+- NAO deixar action row (CTAs) `flex-direction: row` em `<768px` — primary forca secondary cortado. Sempre `column` em mobile
 
 ## Phase 2 considerations
 

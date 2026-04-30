@@ -72,7 +72,9 @@ Numerais sempre **tabular** (`font-feature-settings: "tnum"`) em mono para alinh
 ## 2. Color
 
 ### Filosofia
-A paleta deriva **diretamente da marca TRC** (orange `#DB592A` + blue `#2563B5` do logo) com refinamentos para uso em interface: status semaforo herda os tokens da app RN TRC (Bootstrap-derived) com **dessaturacao em backgrounds** para nao gritar em dashboards densos. Light + Dark themes sao first-class. **Nenhum purple/violet. Nenhum gradiente roxo.** Backgrounds preservam `#FFFFFF` por **continuidade de marca** com a app RN existente, mas surface secundaria `#F8F9FA` cria profundidade sem ruido.
+A paleta deriva **diretamente da marca TRC** (orange `#DB592A` + blue `#2563B5` do logo) com refinamentos para uso em interface: status semaforo herda os tokens da app RN TRC (Bootstrap-derived) com **dessaturacao em backgrounds** para nao gritar em dashboards densos. Light + Dark themes sao first-class. **Nenhum purple/violet. Nenhum gradiente roxo.**
+
+**Surface palette layered (REVISADO S163b):** ground (`--surface-bg` `#FAFAF9` warm-grey near-white) + cards (`--surface-elevated` `#FFFFFF` pure white) criam **value contrast natural ~1-2%** que substitui borders/shadows pesadas como mecanismo de hierarquia. Padrao classico de dashboard (Stripe / Linear / Notion / Vercel) — superior a `#FFFFFF` ground+cards (que era o convention RN TRC original mas foi catched empiricamente em S163b causando eye strain em uso prolongado + falta de volume nos componentes). Ver secao "Surface palette application" abaixo para regras prescritivas + anti-pattern.
 
 ### Brand colors (light + dark mode)
 
@@ -101,11 +103,11 @@ A paleta deriva **diretamente da marca TRC** (orange `#DB592A` + blue `#2563B5` 
 ```css
 :root,
 [data-theme="light"] {
-  /* Surfaces */
-  --surface-bg:        #FFFFFF;  /* page background — TRC RN convention */
+  /* Surfaces (layered — S163b revisao) */
+  --surface-bg:        #FAFAF9;  /* page background — warm-grey near-white (98% luminance), ground layer */
   --surface-secondary: #F8F9FA;  /* sections, panels, hero containers */
   --surface-tertiary:  #F1F3F5;  /* nested panels, table headers */
-  --surface-elevated:  #FFFFFF;  /* cards over secondary */
+  --surface-elevated:  #FFFFFF;  /* cards/sidebars/headers over ground — pure white = ~1-2% value contrast vs --surface-bg */
 
   /* Borders & dividers */
   --border-default: #DEE2E6;     /* default 1px borders */
@@ -156,6 +158,39 @@ A paleta deriva **diretamente da marca TRC** (orange `#DB592A` + blue `#2563B5` 
   --status-inactive-line: #ADB5BD;
 }
 ```
+
+### Surface palette application (S163b ADD — prescritivo)
+
+> **Validacao S163b:** esta secao + correcao do valor de `--surface-bg` para `#FAFAF9` foram validados via canary HTML preview pre-push em `trc-platform/docs/assets/preview/admin-tela-1-v4-preview.html` (substituto #7 visual decision pre-validation).
+
+Dashboard usa **layered surface pattern**: value contrast entre ground (`--surface-bg` warm-grey) e elevated cards (`--surface-elevated` pure white) substitui borders/shadows pesadas como mecanismo de hierarquia.
+
+#### Mapping element -> token
+
+| Element | Token | Por que |
+|---|---|---|
+| `<body>`, `.app-main` | `--surface-bg` | Ground layer — luminance 98% reduz glare em uso prolongado |
+| `.app-sidebar`, `.app-header` | `--surface-elevated` | Chrome global — value contrast com main = boundary natural sem border pesada |
+| `.dual-value-card`, `.ai-suggestion-inline` | `--surface-elevated` | Hero cards — branco puro sobre warm-grey ground = elevation natural |
+| `.adf-column` em wide >=1440 | `--surface-elevated` | Coluna decision focus delimitada por value contrast + hairline (ver admin-decision-focus.md) |
+| Status cards (CTL items size=lg) | bg semantic (`--status-error-bg` etc.) sobre ground | bg semantic sobre warm-grey ground = volume sutil natural |
+| Modal | `--surface-elevated` + backdrop overlay | Mesmo principio de elevation por value contrast |
+| Inputs (`<input>`, `<select>`) dentro de chrome elevated | `--surface-bg` | Recessed surfaces — value contrast inverso (input "afundado" no header elevated) |
+| Modal inputs (dentro de modal elevated) | `--surface-secondary` (`#F8F9FA`) | Recessed dentro de elevated — duplo contraste |
+
+#### Anti-pattern (concept × forbidden × required substitute)
+
+| Concept | Forbidden | Required substitute |
+|---|---|---|
+| Ground vs cards | `--surface-bg: #FFFFFF` + `--surface-elevated: #FFFFFF` (white-on-white, sem value contrast) | **`--surface-bg: #FAFAF9` warm-grey** + **`--surface-elevated: #FFFFFF` pure white** = ~1-2% value contrast natural |
+| Card delimitation | Borders pesadas `1px solid rgba(0,0,0,0.15)` ou shadows fortes `0 4px 12px` para definir cards sobre branco | **Value contrast natural** entre ground warm-grey e card white. Borders subtle apenas para semantic emphasis (`var(--status-error-line)` no DualValueCard urgency=critical) |
+| Ground luminance | Branco puro `#FFFFFF` sustained em uso prolongado | **Warm-grey 98% luminance** `#FAFAF9` — reduz eye strain sem perder "feel limpo" |
+| Ground temperature | Cool-grey `#F8F9FA` (subtle blue tint) | **Warm-grey** `#FAFAF9` (subtle yellow tint) — neutral-warm reduz feel "clinical/sterile" para audience compliance |
+| Decoracao para criar volume | Gradient meshes, drop-shadows simetricos, neumorphism | **Value layering** (ground vs surface) + occasional hairlines funcionais (`var(--border-subtle)`) |
+
+**Por que warm-grey e nao cool-grey:** cool-grey (`#F8F9FA`) e o convention "tech / SaaS / clinical". TRC compliance trabalhista e audience corporate-construcao — warm-grey (`#FAFAF9`) reduz feel clinical mantendo profissionalismo. Diferenca e ~1 unidade de hue, suficiente para perception sem mudar palette overall.
+
+**Caso S163b documentado:** design-system v3 prescrevia `--surface-bg: #FFFFFF` (TRC RN convention). Bolt aplicou branco-em-branco (page bg + cards bg = `#FFFFFF`). Empirical render mostrou: cards "flat sobre flat" sem volume, eye strain potencial em uso prolongado. Validado em canary HTML preview pre-push: warm-grey ground + white cards = "considerably better" (CMAC verbatim).
 
 ### Dark theme — full token map
 ```css
