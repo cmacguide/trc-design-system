@@ -50,11 +50,46 @@ Em modais e hero sections, considerar `--surface-secondary` como background prin
 
 ---
 
-## NAO #6: NUNCA usar emoji como icon (📄 ✓ ⚠ 🔔 nao!)
+## NAO #6: REPLACE every emoji with a specific Lucide React icon
 
-**Por que:** unprofessional, cross-platform inconsistent rendering, generic.
+**Por que:** Emoji rendering varia cross-platform (Apple vs Windows vs Android), e LLMs de geracao visual (Bolt incluido) tendem a inserir emoji por default quando precisam expressar status — resulta em UI unprofessional e generic. Lucide React icons sao open-source, vetoriais (escalam sem perda), renderizam identicos cross-platform, e respondem a `currentColor` do CSS — alinhado com o tema dual brand TRC (laranja/azul).
 
-**Substituir por:** Lucide React icons (open-source) com `stroke-width: 1.5px` consistente, color via `currentColor`.
+**Substituir por (mapeamento prescritivo — nao opcional):**
+
+| Concept                              | NAO usar           | Lucide icon (USE THIS) |
+|---|---|---|
+| Document / file                      | 📄 📋 📁           | `FileText` (doc), `Folder` (group), `FileCheck` (validated) |
+| Validated / OK / completed           | ✓ ✅ 👍            | `Check` (inline), `CheckCircle2` (status), `BadgeCheck` (verified) |
+| Warning / atencao                    | ⚠ ⚠️ 🚨           | `AlertTriangle` (general), `AlertCircle` (info-warning) |
+| Blocked / rejected / forbidden       | 🚫 ❌ 🛑           | `Ban` (forbidden), `XCircle` (rejected), `ShieldAlert` (security block) |
+| Notification / alert                 | 🔔 📢              | `Bell` (notif), `BellRing` (active notif) |
+| AI / Agent / spark                   | ✨ 🤖 🪄           | `Sparkles` (AI suggestion), `Bot` (agent), `Zap` (action AI) |
+| Money / R$ / financial               | 💰 💵 💸           | `DollarSign`, `Receipt`, `Banknote` |
+| Time / urgency                       | ⏰ ⏳ 🕒            | `Clock` (time), `Hourglass` (urgent waiting), `Timer` (countdown) |
+| User / profile                       | 👤 👥              | `User` (single), `Users` (multiple) |
+| Home / dashboard                     | 🏠 🏢              | `Home` (home), `Building2` (construtora/empresa) |
+| Search / find                        | 🔍 🔎              | `Search` (general), `Filter` (filter list) |
+| Settings / config                    | ⚙ ⚙️              | `Settings` (gear), `SlidersHorizontal` (preferences) |
+| Calendar / date                      | 📅 📆              | `Calendar` (date), `CalendarClock` (date+time) |
+| Phone / call                         | 📞 📱              | `Phone` (call), `Smartphone` (mobile device) |
+| Mail / message                       | ✉ 📧              | `Mail` (email), `MessageCircle` (chat), `MessageSquare` (sms) |
+| Compliance / shield                  | 🛡 🔒              | `Shield` (compliance), `ShieldCheck` (compliant), `Lock` (locked) |
+| Escalate / juridical                 | ⚖ 📑              | `Scale` (juridical), `Gavel` (verdict) |
+| Trend up / down                      | 📈 📉              | `TrendingUp`, `TrendingDown` |
+| Arrow / direction                    | → ← ↑ ↓ (text)    | `ChevronRight`, `ChevronLeft`, `ArrowUpRight` (external) — text arrows toleraveis em breadcrumb separator (vide BreadcrumbStack `›`) e contextos tipograficos |
+
+**Regras de aplicacao Lucide:**
+
+- `stroke-width: 1.5px` (consistente em todo o sistema; nao mistura com 2px ou 1px)
+- `color: currentColor` (herda do contexto via CSS) — nunca hardcode hex
+- Tamanho: 16px (inline texto), 20px (buttons/tabs), 24px (cards/headers), 32px+ (hero/empty-states)
+- Importar via `import { Check, Bell, FileText } from 'lucide-react'` — nao importar pacote inteiro
+- Emoji ainda sao OK em **conteudo de usuario** (mensagens digitadas, comments) — NUNCA em UI chrome ou data-driven status
+
+**Casos limite:**
+- Texto que nomeia a feature (ex: "Compartilhar via WhatsApp 💚") — `MessageCircle` ou logo oficial WhatsApp (sem emoji)
+- Empty state copy (ex: "Tudo em dia! 🎉") — substitui por `CheckCircle2` em verde + sem emoji no texto
+- Notification preview (ex: "Você tem 3 docs ⏰ vencendo") — `Clock` icon ANTES da copy, sem emoji
 
 ---
 

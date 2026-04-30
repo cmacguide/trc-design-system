@@ -38,16 +38,23 @@ trc-design-system/
 ├── README.md           # este arquivo (filosofia + contrato + brand)
 ├── tokens.md           # typography, color (light+dark), spatial, depth, motion + Tailwind config
 ├── anti-patterns.md    # 8 itens "NAO fazer" (anti generic-AI checklist)
-└── components/
-    ├── DualValueCard.md
-    ├── ComplianceTrafficLight.md
-    ├── AISuggestionInline.md
-    ├── StatusDot.md
-    ├── KPICard.md
-    ├── RiskScoreBar.md
-    ├── ActionableNotificationCard.md
-    └── BreadcrumbStack.md
+├── components/         # primitivos atomicos
+│   ├── DualValueCard.md
+│   ├── ComplianceTrafficLight.md
+│   ├── AISuggestionInline.md
+│   ├── StatusDot.md
+│   ├── KPICard.md
+│   ├── RiskScoreBar.md
+│   ├── ActionableNotificationCard.md
+│   ├── BreadcrumbStack.md
+│   └── ConstrutoraIndicator.md           # (S162) chip/badge identificador construtora — Empreiteiro PoV
+└── layouts/                              # (S162) templates de pagina compostos
+    ├── mobile-tab-bar.md                 # navegacao primaria mobile Empreiteiro (4 itens)
+    ├── empreiteiro-dashboard.md          # Featured Action + Compact List (Empreiteiro Tela 1)
+    └── admin-decision-focus.md           # 1 decisao por vez + dual-value reasoning (Admin Tela 1)
 ```
+
+**Componentes vs layouts:** `components/` sao **primitivos atomicos** (StatusDot, ConstrutoraIndicator) — composiveis em qualquer tela. `layouts/` sao **templates de pagina** que prescrevem composicao + estrutura para JTBDs especificos (uma tela do app). Layouts invocam componentes; componentes nao conhecem layouts.
 
 ## Token nomenclature note (v1 -> v2 migration)
 
