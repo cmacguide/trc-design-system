@@ -35,7 +35,20 @@ A tela e o **antagonista visual** do dashboard de auditoria (Tela 2). Tela 2 exp
 └──────────────────────────────────────────────────────────────┘
 ```
 
-Coluna central com max-width 720px, centrada horizontalmente. **Tudo o resto da viewport e respiracao** (`var(--surface-bg)`) — proposital, sinaliza "concentrar aqui".
+Coluna central com max-width **responsivo + tratamento atmosferico nas laterais em wide**:
+
+| Viewport | Column max-width | Token | Lateral atmosphere |
+|---|---|---|---|
+| Mobile (<768px) | 100% | `--column-fluid` | n/a (sem laterais) |
+| Tablet (768-1023px) | 640px | `--column-reading` | `--surface-bg` puro |
+| Desktop (1024-1439px) | 720px | `--column-decision` | `--surface-bg` puro + sidebar app 240px a esquerda |
+| Wide (>=1440px) | **920px** | `--column-spread` | **column elevation subtle** + technical-grid texture nas laterais (ver "Wide treatment" abaixo) |
+
+**Por que 920px e NAO 1024+ no wide:** acima de 960px a coluna comeca a ter peso de dashboard (perde "uma decisao por vez"). 920px e o ponto onde DualValueCard tem ~440px por lado (confortavel para "EMPREITEIRO aguarda R$ 142.300" + subtitle sem aperto), mantendo asimetria 48/52% que o cerebro percebe como **intencional** (50/50 simetrico = "Bootstrap container").
+
+**Por que NAO simplesmente 720px absoluto em todo wide:** 720/1920 = 37.5% → o cerebro interpreta como "conteudo perdido em mar branco" se nao houver atmosfera lateral. Em 1440px monitor (37.5%→50%), 720 funciona; em 1920px+, vira bug-perception. Solucao: escalar largura E adicionar treatment.
+
+**Tudo o resto da viewport e respiracao** (`var(--surface-bg)`) — proposital, sinaliza "concentrar aqui".
 
 ## Componentes invocados
 
@@ -47,7 +60,11 @@ Coluna central com max-width 720px, centrada horizontalmente. **Tudo o resto da 
 ## Token application
 
 - **Page background:** `var(--surface-bg)` (#FFFFFF)
-- **Coluna central:** max-width 720px, margin auto, padding `var(--space-8) var(--space-6)` (top/bottom 64px, lateral 24px)
+- **Coluna central (responsiva):**
+  - Mobile (<768px): width 100% (`--column-fluid`), padding `var(--space-6) var(--space-4)` (top/bottom 32px, lateral 16px)
+  - Tablet (768-1023px): max-width 640px (`--column-reading`), margin auto, padding `var(--space-7) var(--space-5)`
+  - Desktop (1024-1439px): max-width 720px (`--column-decision`), margin auto, padding `var(--space-8) var(--space-6)`
+  - Wide (>=1440px): max-width 920px (`--column-spread`), margin auto, padding `var(--space-8) var(--space-7)`, com **column elevation subtle** + atmospheric grid lateral (ver "Wide treatment")
 - **BreadcrumbStack:** padding `var(--space-3) 0`
 - **Header (titulo + subtitulo):**
   - H1 — `--text-h2` Fraunces 700 (display weight, 30-32px), color `--text-primary`. Texto inclui o **valor R$** in-line porque e o sujeito da decisao
@@ -128,6 +145,37 @@ Decisao deliberada: na maioria das telas, primary CTA e laranja `--brand-primary
 </main>
 ```
 
+## Wide screen treatment (>=1440px)
+
+Para evitar "coluna estreita perdida no monitor wide", aplicar **textura tecnica subtle** nas laterais + elevation hairline na coluna. Evoca papel tecnico de engenharia (industrial/utilitarian aesthetic alinhado a TRC compliance trabalhista) sem cair em "decorative SaaS gradient" (anti-pattern #4 ja documentado).
+
+```css
+@media (min-width: 1440px) {
+  .admin-decision-focus {
+    /* Lateral technical-paper texture (subtle, nao decorativa) */
+    background:
+      var(--surface-bg)
+      repeating-linear-gradient(
+        90deg,
+        transparent 0,
+        transparent 80px,
+        var(--border-subtle) 80px,
+        var(--border-subtle) 81px
+      );
+    background-blend-mode: multiply;
+  }
+
+  .adf-column {
+    background: var(--surface-bg);
+    box-shadow:
+      inset 0 0 0 1px var(--border-subtle),
+      0 1px 0 var(--border-subtle); /* hairline, NAO dropshadow generic */
+  }
+}
+```
+
+**Anti-pattern explicito para evitar:** NAO substituir esse tratamento por dropshadow simetrico (vide NAO#8), gradient meshes (vide NAO#4), ou colored backgrounds. Se a lateral precisar de mais presenca, adicionar mais espessura a grid (ex: 79px+82px), nunca trocar a textura.
+
 ## CSS
 
 ```css
@@ -137,9 +185,34 @@ Decisao deliberada: na maioria das telas, primary CTA e laranja `--brand-primary
 }
 
 .adf-column {
-  max-width: 720px;
+  width: 100%;
   margin: 0 auto;
-  padding: var(--space-8) var(--space-6);
+  padding: var(--space-6) var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .adf-column {
+    max-width: var(--column-reading); /* 640px */
+    padding: var(--space-7) var(--space-5);
+  }
+}
+
+@media (min-width: 1024px) {
+  .adf-column {
+    max-width: var(--column-decision); /* 720px */
+    padding: var(--space-8) var(--space-6);
+  }
+}
+
+@media (min-width: 1440px) {
+  .adf-column {
+    max-width: var(--column-spread); /* 920px */
+    padding: var(--space-8) var(--space-7);
+    background: var(--surface-bg);
+    box-shadow:
+      inset 0 0 0 1px var(--border-subtle),
+      0 1px 0 var(--border-subtle);
+  }
 }
 
 .adf-header {

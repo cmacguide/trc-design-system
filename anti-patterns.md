@@ -1,4 +1,4 @@
-# Anti-Generic-AI Checklist (8 itens NAO fazer)
+# Anti-Generic-AI Checklist (9 itens NAO fazer)
 
 > Esta lista e prescritiva. Toda violacao deve ser flagged em code review.
 >
@@ -106,3 +106,34 @@ Em modais e hero sections, considerar `--surface-secondary` como background prin
 **Por que:** Tailwind default shadow, lazy.
 
 **Substituir por:** `--elev-1` ate `--elev-4` — 2-3 layered shadows com offsets/spreads variados que evocam camadas de calque.
+
+---
+
+## NAO #9: NUNCA criar layout/component viewport-naive (sem comportamento responsivo declarado)
+
+**Por que:** LLMs de geracao visual (Bolt incluido) **geram literalmente** o que esta no spec. Se o spec nao menciona breakpoint, Bolt assume largura unica → bugs catastroficos em mobile (texto vertical palavra-por-palavra) + WEB wide (coluna estreita perdida em mar branco). Esse foi o catch S163 que motivou esta regra (re-render mobile S20 Ultra mostrou AISuggestionInline com texto vertical 1-palavra-por-linha; web 1920px mostrou admin-decision-focus com 30% aproveitamento percebido como "estranho/bug").
+
+**Substituir por (mapeamento prescritivo — nao opcional):**
+
+| Aspecto | NAO faca | FACA |
+|---|---|---|
+| Page layout max-width | `max-width: 720px` absoluto sem media queries | Escala 4-tier via `@media` + tokens `--column-*` (`fluid` mobile, `reading` 640 tablet, `decision` 720 desktop, `spread` 920 wide) |
+| Componente em container variavel | `min-width: 280px` rigido (quebra sidebar 220px) | `container-type: inline-size` + `@container` queries com tokens `--cb-compact/medium/wide` |
+| Grid de cards (4 itens) | `grid-template-columns: repeat(4, 1fr)` fixo (quebra palavra mobile) | Responsive grid via container queries: 2x2 narrow → 4-col wide; preservar hierarquia visual (criticos top, secundarios bottom) |
+| Texto inline em flex/grid container | sem `overflow-wrap` declarado (gera `width: max-content` default → texto vertical) | `overflow-wrap: break-word; word-break: normal; hyphens: none; min-width: 0` no texto + `min-width: 0` em todos flex/grid children |
+| Sidebar em viewport variavel | sempre visivel ou hamburger-collapse | bottom tab bar (mobile + tablet portrait), sidebar 240px (tablet landscape + desktop) — orientation-aware |
+| Wide screen (>=1440px) | manter coluna estreita central sem treatment (vira "perdida em mar branco") | Coluna 920px max + atmospheric treatment (technical-grid lateral subtle + column elevation hairline) — vide admin-decision-focus.md "Wide treatment" |
+
+**Verificacao obrigatoria pos-spec:** todo layout/component deve responder explicitamente as perguntas:
+
+1. "Como isso renderiza em viewport 375 / 412 / 768 / 1024 / 1440 / 1920?"
+2. "Como isso renderiza em container 220 / 480 / 720 / 920px (componentes)?"
+
+Se a resposta for "nao sei" para qualquer um, adicionar comportamento explicito ao spec ANTES de commit. Validar pos-ingest com **visual smoke test em 3 viewports minimo** (mobile 412, tablet 768, desktop 1440) — substituto #6 do docs-only verification.
+
+**Casos limite:**
+- Componentes que sempre vivem em container fixo (ex: badge inline em texto) podem omitir container query — declarar **explicitamente** "Single-context, no responsive needed" no spec
+- Layouts que sao deliberadamente fixed-width (ex: phone-mockup em landing page) podem omitir media queries — declarar **explicitamente** "Fixed-frame layout, viewport-independent"
+- Quando container queries nao estao disponiveis (ex: Tailwind 3 sem plugin), fallback para media queries com **comentario TODO** apontando o downgrade
+
+**Validacao tecnica:** confirmar que stack alvo suporta `container-type: inline-size` antes de assumir (Tailwind 4 OK, Tailwind 3 precisa plugin, CSS native suportado em todos browsers modernos 2024+).

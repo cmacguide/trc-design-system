@@ -89,6 +89,65 @@ type AISuggestionProps = {
 }
 ```
 
+## Wrap & container behavior
+
+AISuggestionInline aparece em containers de largura variada (hero ~720px, sidebar ~220px, modal ~480px, list-item ~360px). Usa **container queries** para adaptar layout interno, **NAO `min-width` rigido** (que quebraria sidebar narrow).
+
+```css
+.ai-suggestion-inline {
+  container-type: inline-size;
+  container-name: asi;
+
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  /* CRITICAL: NAO declarar min-width fixo aqui — quebra em containers narrow */
+
+  display: grid;
+  gap: var(--space-3);
+  /* Default narrow (<280px container): tudo empilhado vertical */
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "icon"
+    "body"
+    "meta";
+}
+
+/* Container 280px+: icon esquerda, body direita, meta abaixo */
+@container asi (min-width: 280px) {
+  .ai-suggestion-inline {
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      "icon body"
+      "meta meta";
+  }
+}
+
+/* Container 480px+: icon | body | meta horizontal */
+@container asi (min-width: 480px) {
+  .ai-suggestion-inline {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "icon body meta";
+  }
+}
+
+.asi-icon { grid-area: icon; }
+.asi-body { grid-area: body; min-width: 0; /* permite shrink */ }
+.asi-meta { grid-area: meta; min-width: 0; }
+
+.asi-text {
+  /* CRITICAL: wrap por sentence, NAO por character */
+  overflow-wrap: break-word;
+  word-break: normal;       /* NAO break-all (quebra palavra) */
+  hyphens: none;
+  min-width: 0;
+}
+```
+
+**Por que NAO `min-width: 280px` no container (anti-pattern catched em S163):** componente seria forcado a ultrapassar containers narrow, causando overflow horizontal na page. Container queries resolvem **adaptando o layout interno**, NAO forcando largura externa.
+
+**Caso S163 in-Bolt-render documentado:** AISuggestionInline em mobile S20 Ultra (412px viewport, sidebar TRC 30% = main content ~290px) sem container query gerou `width: max-content` por default → texto vertical 1-palavra-por-linha ("Concretex" / "tem" / "historico" cada em linha). Fix: adicionar container query + overflow-wrap. Verificar visualmente pos-ingest (substituto #6 docs-only verification).
+
 ## Accessibility
 
 - `<aside role="complementary">` semantica

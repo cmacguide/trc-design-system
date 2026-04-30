@@ -320,8 +320,47 @@ A nomenclatura semantica `ok | warn | block | inactive | info` mapeia para os to
   --bp-tablet:    768px;
   --bp-desktop:   1024px;
   --bp-wide:      1280px;
+  --bp-xwide:     1440px;  /* monitor wide — admin-decision-focus expansao */
 }
 ```
+
+### Layout columns (intent-driven)
+
+Tokens para `max-width` de coluna central. Nomes encodam **proposito**, nao valor — ao gerar layouts, escolher pelo intent (decision / reading / spread / dashboard), nao pelo numero.
+
+```css
+:root {
+  --column-fluid:     100%;    /* mobile, sidebar children, ou onde precisa ocupar tudo */
+  --column-reading:   640px;   /* long-form text (prosa, articles, FAQs) */
+  --column-decision:  720px;   /* decision-focus (admin-decision-focus, single-action pages) */
+  --column-spread:    920px;   /* wide-screen layouts que precisam expandir sem virar dashboard */
+  --column-dashboard: 1280px;  /* dashboards explicitos (Tela 2 admin, list-views) */
+}
+```
+
+**Quando usar cada token:**
+
+| Token | Uso correto | Anti-uso |
+|---|---|---|
+| `--column-fluid` | Mobile, layouts dentro de sidebar, modal compacto | Pagina main em desktop (vira "stretched body" sem foco) |
+| `--column-reading` | Tela "Termos de uso", "Sobre", FAQ | Decision-focus (estreito demais para DualValueCard) |
+| `--column-decision` | admin-decision-focus, "Editar perfil" | Dashboard explicito (vira fragmentado) |
+| `--column-spread` | admin-decision-focus em wide >=1440px, empreiteiro-dashboard wide | Dashboards (use `--column-dashboard` ou nada) |
+| `--column-dashboard` | Tela 2 admin (auditoria multi-medicao), Tela 3 admin (kanban obras) | Decision-focus (perde foco) |
+
+### Container query breakpoints (componentes)
+
+Para componentes que usam `container-type: inline-size`, breakpoints **separados** dos viewport (porque componente reage a largura DELE, nao da viewport).
+
+```css
+:root {
+  --cb-compact:   280px;   /* container compacto (sidebar children, list items) */
+  --cb-medium:    480px;   /* container medio (modal, hero card mobile) */
+  --cb-wide:      720px;   /* container amplo (main content, hero wide) */
+}
+```
+
+**Por que separados de `--bp-*`:** viewport breakpoints respondem a TELA do usuario; container breakpoints respondem ao CONTAINER do componente. Mesmo componente (ex: AISuggestionInline) pode estar em viewport desktop 1920px mas container sidebar 220px — viewport diz "wide", container diz "compact". Componente deve obedecer container.
 
 ### Border radius (restrita)
 ```css
