@@ -67,6 +67,35 @@ Numerais sempre **tabular** (`font-feature-settings: "tnum"`) em mono para alinh
 - Labels uppercase: `letter-spacing: 0.06em` (respirar)
 - Mono: `letter-spacing: -0.01em` (compactar levemente)
 
+### Type Scale CSS variables (S166 ADD — prescritivo)
+
+A tabela acima documenta o spec semantico. Os valores tambem sao expostos como CSS custom properties para uso direto em `font-size: var(--text-X)` per LLM-render downstream (Bolt/v0/Lovable). Adicionado em S166 apos Substituto #5 caught gap entre tabela documentacional e bloco implementavel.
+
+**Audit trail:** Validated via canary `s166-engenheiro-tela3-canary.html` — InsightCard / FoundryPatternBadge / engenheiro-insights referenciam `var(--text-h1)`, `var(--text-h2)`, `var(--text-body)`, `var(--text-ui)`, `var(--text-caption)`, `var(--text-mono-xs)` e tokens irmaos.
+
+```css
+:root,
+[data-theme="light"],
+[data-theme="dark"] {
+  /* Typography font-size scale (par com tabela Type Scale §1) */
+  --text-hero:     56px;
+  --text-display:  36px;
+  --text-h1:       28px;
+  --text-h2:       22px;
+  --text-h3:       18px;
+  --text-body-lg:  16px;
+  --text-body:     14px;
+  --text-ui:       13px;
+  --text-caption:  12px;
+  --text-label:    11px;
+  --text-mono-lg:  16px;
+  --text-mono:     13px;
+  --text-mono-xs:  11px;
+}
+```
+
+**Why nao em `:root` separado por theme:** font-size escalar e theme-invariant (light e dark mode usam mesma escala). Se futuramente precisar overrides por theme (ex: dark mode com lineheight diferente), criar tokens auxiliares dedicados — NAO bifurcar a escala primaria.
+
 ---
 
 ## 2. Color
@@ -587,6 +616,98 @@ Ao receber update WebSocket "CND vencida":
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+```
+
+---
+
+---
+
+## 6. Chart & Visualization Tokens
+
+> **Adicionado em S166 para Engenheiro Tela 3 Insights.** Audit trail: Validated via canary `s166-engenheiro-tela3-canary.html` variables `:root { --chart-neutral, --chart-threshold, --chart-line, --chart-threshold-line, --chart-stack-*, --badge-* }` (lines ~61-76 do canary).
+
+### Filosofia
+
+Tokens de chart usam **nomenclatura intent-driven** (o que o dado significa semanticamente) em vez de nomes de cor (`--red-strong`, `--gray-mid`). Isso garante que mudancas de tema (dark mode, rebrand) atualizem todos os charts de uma vez, e que implementadores saibam quando usar cada cor sem consultar design.
+
+### Chart series
+
+```css
+:root {
+  /* Barras / linhas em range normal — neutro, sem alerta */
+  --chart-stroke-neutral: #9CA3AF;
+  /* Why: cinza medio — presente mas nao chama atencao. Bars dentro do threshold */
+
+  /* Barras acima do threshold critico (ex: >20 docs/dia Card 1) */
+  --chart-stroke-critical: #B91C1C;
+  /* Why: vermelho critico — alinha com --status-error-fg. Acao imediata requerida */
+
+  /* Linha de threshold de atencao (ex: 15% biometria Card 2) — tracejada */
+  --chart-stroke-warning: #B45309;
+  /* Why: amarelo ocre — alinha com --status-warning-fg. Monitorar, nao agir ainda */
+
+  /* Serie principal de line chart */
+  --chart-line-series: #2563B5;
+  /* Why: azul brand secundario — alinha com --brand-secondary. Identifica a serie principal */
+}
+```
+
+**Decisao: nao duplicar `--status-error-fg` e `--status-warning-fg`**
+
+Os tokens `--chart-stroke-critical` e `--chart-stroke-warning` poderiam ser aliases de `--status-error-fg` e `--status-warning-fg` (mesmos valores `#B91C1C` e `#B45309`). Optou-se por tokens separados porque:
+
+1. **Semantica diferente:** `--status-error-fg` e o texto/icone de um estado de erro em UI. `--chart-stroke-critical` e a cor de uma barra de dados acima de um threshold. Sao contextos distintos que podem divergir em rebrand futuro.
+2. **Descoberta:** implementadores buscam por "chart" ao estilizar charts, por "status" ao estilizar badges. Tokens separados aparecem na busca certa.
+
+### Stacked bar chart
+
+```css
+:root {
+  /* Segmento verde — compliance ok (documentos validos) */
+  --chart-stack-ok:       #047857;
+  /* Segmento amarelo — compliance em atencao (proximos de vencer) */
+  --chart-stack-warning:  #D97706;
+  /* Segmento vermelho — compliance bloqueado (vencidos/irregulares) */
+  --chart-stack-critical: #B91C1C;
+}
+```
+
+**Decisao: valores proprios vs aliases de `--status-success-line` etc.**
+
+Os valores diferem levemente dos tokens de status (`--status-success-line: #28A745`, `--status-warning-line: #FFC107`, `--status-error-line: #DC3545`). Os tokens de chart usam valores mais escuros/saturados porque sao aplicados como `fill` em barras SVG sobre fundo branco — precisam de contraste maior do que texto/icones de status. Mudancas de contraste em dark mode sao tratadas separadamente.
+
+### FoundryPatternBadge aliases
+
+```css
+:root {
+  /* Aliases semanticos para FoundryPatternBadge — apontam para tokens de status existentes */
+  --badge-deteriorando-bg: var(--status-error-bg);      /* #FBEAEC */
+  --badge-deteriorando-fg: var(--status-error-fg);      /* #A02834 */
+  /* Note: canary usou #FEE2E2 / #B91C1C (Tailwind red-100/red-700).
+     Aqui alinhamos com os tokens TRC existentes (--status-error-bg/fg).
+     Se necessario ajustar para o valor exato do canary, override em tokens do projeto. */
+
+  --badge-estavel-bg:      var(--surface-tertiary);     /* #F1F3F5 */
+  --badge-estavel-fg:      var(--text-secondary);       /* #6C757D */
+
+  --badge-oscilatorio-bg:  var(--status-warning-bg);   /* #FFF6DD */
+  --badge-oscilatorio-fg:  var(--status-warning-fg);   /* #8A6300 */
+  /* Note: canary usou #FEF3C7 / #B45309 (Tailwind amber-100/amber-700).
+     Aqui alinhamos com os tokens TRC existentes. Override se necessario. */
+}
+```
+
+### Card dimensoes
+
+```css
+:root {
+  /* Altura minima de insight cards em desktop */
+  --card-min-height: 320px;
+  /* Why: cards na grade 4-col em 1920px com sidebar 240px = ~408px por card.
+     320px minimo garante proporcao adequada para charts SVG respirarem
+     sem desperdicar espaco em cards com poucas rows (ex: Card 3 com 5 obras).
+     Em mobile: min-height: auto (conteudo dita altura — ver InsightCard.md). */
 }
 ```
 
