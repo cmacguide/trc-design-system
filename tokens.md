@@ -806,3 +806,45 @@ export default {
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
 ```
+
+---
+
+## Pivot Table (S167)
+
+Tokens introduzidos em S167 para o componente AdminCrossTab (rota /admin/cross-tab).
+Todos sao wrappers semanticos sobre tokens DS existentes — sem valores literais novos.
+Substituto #5 pre-push: grep -r "var(--pivot" src/ confirma 100% cobertura em tokens.md.
+
+**Audit trail:** Validated via canary `s167-admin-tela2-canary.html` (DSVL Etapa 1 Gate G-1).
+ADR-S167-002: Tokens pivot como wrappers semanticos no :root.
+
+```css
+:root,
+[data-theme="light"],
+[data-theme="dark"] {
+  /* Pivot Table tokens (S167) — wrappers sobre tokens DS existentes */
+  --pivot-header-bg:        var(--surface-tertiary);    /* #F1F3F5 — thead background (row-0, row-1) */
+  --pivot-corner-bg:        var(--surface-tertiary);    /* #F1F3F5 — corner cell (col-0 + row-0 intersecao) */
+  --pivot-cell-padding-x:   var(--space-3);             /* 12px — horizontal cell padding */
+  --pivot-cell-padding-y:   var(--space-2);             /* 8px  — vertical cell padding */
+  --pivot-cell-border:      var(--border-subtle);       /* #E9ECEF — hairline entre celulas */
+  --pivot-row-label-width:  200px;                      /* largura fixa da col-0 sticky (obra nome) */
+  --pivot-header-font-size: var(--text-label);          /* 11px — font-size dos cabecalhos mes */
+  --pivot-cell-null-color:  var(--text-tertiary);       /* #ADB5BD — cor do "-" em celulas sem dado */
+  --pivot-hover-bg:         var(--hover-overlay-light); /* rgba(33,37,41,0.04) — hover state celula */
+}
+```
+
+### Alias map (9 tokens pivot x tokens base DS)
+
+| Token pivot              | Alias base             | Valor resolvido            |
+|--------------------------|------------------------|----------------------------|
+| --pivot-header-bg        | --surface-tertiary     | #F1F3F5 (light) / #2A2A2A (dark) |
+| --pivot-corner-bg        | --surface-tertiary     | #F1F3F5 (light) / #2A2A2A (dark) |
+| --pivot-cell-padding-x   | --space-3              | 12px                       |
+| --pivot-cell-padding-y   | --space-2              | 8px                        |
+| --pivot-cell-border      | --border-subtle        | #E9ECEF (light) / #2A2F33 (dark) |
+| --pivot-row-label-width  | (valor fixo)           | 200px                      |
+| --pivot-header-font-size | --text-label           | 11px                       |
+| --pivot-cell-null-color  | --text-tertiary        | #ADB5BD (light) / #6C757D (dark) |
+| --pivot-hover-bg         | --hover-overlay-light  | rgba(33,37,41,0.04)        |
