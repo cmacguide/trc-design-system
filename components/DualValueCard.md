@@ -53,6 +53,7 @@ Render rule (helper `renderAmount(v: ValueDescriptor): string`):
 - **Border radius:** `var(--radius-3)` (12px)
 - **Elevation:** `var(--elev-1)` default, `var(--elev-2)` on hover
 - **Hero title:** `--text-h3` Plus Jakarta 700, color `var(--text-primary)`
+- **Header layout:** 1-row default (`display: flex; justify-content: space-between`); 2-row stack quando `headerExtras` presente (row 1 = title + headerExtras, row 2 = urgency badge alinhado-esquerda) — preserva breathing room em narrow viewports
 - **Dual-value section:** dois rows separados por hairline `1px solid var(--border-subtle)`
 - **"VOCE / CONTRAPARTE" label:** `--text-label` uppercase, color `var(--text-tertiary)`
 - **R$ amount:** `--text-mono-lg` JetBrains Mono 600, color `var(--text-primary)`
@@ -70,10 +71,21 @@ function renderAmount(v: ValueDescriptor): string {
 }
 
 <article className="dual-value-card" data-urgency={urgency}>
-  <header className="dvc-header">
-    <h3 className="dvc-title">{title ?? 'Análise bilateral'}</h3>
-    {headerExtras /* opcional: ConstrutoraIndicator chip ou similar */}
-    <Badge urgency={urgency}>{urgencyLabel}</Badge>
+  <header className="dvc-header" data-has-extras={headerExtras ? 'true' : undefined}>
+    {headerExtras ? (
+      <>
+        <div className="dvc-header-row1">
+          <h3 className="dvc-title">{title ?? 'Análise bilateral'}</h3>
+          {headerExtras}
+        </div>
+        <Badge urgency={urgency}>{urgencyLabel}</Badge>
+      </>
+    ) : (
+      <>
+        <h3 className="dvc-title">{title ?? 'Análise bilateral'}</h3>
+        <Badge urgency={urgency}>{urgencyLabel}</Badge>
+      </>
+    )}
   </header>
   <dl className="dvc-values">
     <div className="dvc-row">
