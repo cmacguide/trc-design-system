@@ -17,6 +17,9 @@ Template de pagina para `/empreiteiro/` (Tela 1). Padrao **Featured Action + Com
 │  • CTA secondary (Adiar / Lembrar)  │
 │                                     │
 ├─────────────────────────────────────┤
+│  [FILTER PILLS — FilterPills]       │
+│   Todas  |  Atencao (N)  |  OK (N) │  <- horizontal scroll
+├─────────────────────────────────────┤
 │  Lista compacta "Outras construtoras"
 │  ─ Construtora A ── ●  ConstrutoraIndicator
 │  ─ Construtora B ── ●  ConstrutoraIndicator
@@ -30,9 +33,12 @@ Template de pagina para `/empreiteiro/` (Tela 1). Padrao **Featured Action + Com
 ## Componentes invocados
 
 - `DualValueCard` (urgency=critical) — hero
+- `FilterPills` — barra de filtros entre Hero e Lista; pills: "Todas" / "Atencao" / "OK" (implementado S168 DSVL 6a aplicacao; ver `components/FilterPills.md`)
 - `StatusDot` (size=12, status segundo compliance da construtora) — em cada item da lista
 - `ConstrutoraIndicator` (variant=badge, size=sm) — em cada item da lista
 - (zero-state) `ActionableNotificationCard` com copy "Tudo em dia! Proxima validacao em X dias" — substitui hero quando ha 0 acoes urgentes
+
+Audit trail: Validated via canary HTML preview pre-push: docs/assets/preview/empreiteiro-tela1-v1-preview.html (section [filter pills container] entre Hero e Lista compacta).
 
 ## Token application
 
@@ -70,6 +76,16 @@ Template de pagina para `/empreiteiro/` (Tela 1). Padrao **Featured Action + Com
       onSecondary={() => featuredAction.onAdiar()}
     />
   </section>
+
+  <FilterPills
+    pills={[
+      { id: 'all',       label: 'Todas',   statusHint: 'neutral' },
+      { id: 'attention', label: 'Atencao', count: atencaoCount,   statusHint: 'attention' },
+      { id: 'ok',        label: 'OK',      count: okCount,        statusHint: 'ok' },
+    ]}
+    activePillId={activeFilter}
+    onPillSelect={(id) => setActiveFilter(id)}
+  />
 
   <section className="ed-list" aria-labelledby="list-title">
     <h3 id="list-title" className="ed-list-title">Outras construtoras</h3>
@@ -213,5 +229,5 @@ Template de pagina para `/empreiteiro/` (Tela 1). Padrao **Featured Action + Com
 ## Variants futuros (Phase 2)
 
 - **Pinned action:** empreiteiro pode pinar uma acao para fixar no hero
-- **Filter chip:** "Apenas urgentes / Todas" no topo da lista
+- **FilterPills:** barra "Todas / Atencao / OK" entre Hero e Lista — implementado S168 (DSVL 6a aplicacao); ver `components/FilterPills.md`
 - **Smart sort:** Foundry Agent re-ordena por probabilidade de exito × valor (Phase 2)
