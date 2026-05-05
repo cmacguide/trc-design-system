@@ -5,15 +5,45 @@ Component que materializa o **BKM dual-value framing** TRC: toda decisao de comp
 ## Props
 
 ```typescript
+type ValueDescriptor = {
+  amount: number;
+  label: string;
+  format?: "currency" | "integer-with-suffix"; // default: "currency"
+  suffix?: string; // required when format === "integer-with-suffix" (e.g. "construtora(s)")
+};
+
 type DualValueCardProps = {
-  valueEmpreiteiro: { amount: number; label: string };
-  valueConstrutora: { amount: number; label: string };
+  title?: string;
+  valueEmpreiteiro: ValueDescriptor;
+  valueConstrutora: ValueDescriptor;
   action: { primary: string; secondary?: string };
   urgency: "critical" | "warning" | "info";
+
+  // S169 PoV customization (optional — DualValueCard remains BKM-neutral by default)
+  empreiteiroLabel?: string;     // default "EMPREITEIRO" — override para PoV (ex: "VOCÊ" em Empreiteiro PoV)
+  construtoraLabel?: string;     // default "CONSTRUTORA"
+  headerExtras?: React.ReactNode; // slot opcional entre title e urgency badge (ex: ConstrutoraIndicator chip)
+  primaryVariant?: "brand" | "accent" | "urgency"; // default "brand"; "urgency" derives bg from urgency prop (critical=error-line, warning=warning-line, info=brand-primary)
+
   onPrimary: () => void;
   onSecondary?: () => void;
 };
 ```
+
+### Format flexibility (S169 ADD)
+
+DualValueCard suporta dois formatos de `amount` para acomodar BKM-neutral (currency) e PoVs assimetricos (currency + integer-with-suffix). Casos canonicos:
+
+| PoV | valueEmpreiteiro | valueConstrutora | Exemplo de uso |
+|---|---|---|---|
+| BKM-neutral (Admin Tela 1) | `format: 'currency'` (default) | `format: 'currency'` (default) | "R$ 87.300" \| "R$ 142.300" |
+| Empreiteiro Tela 1 (1st person) | `format: 'currency'` | `format: 'integer-with-suffix', suffix: 'construtora(s)'` | "R$ 87.300" \| "2 construtora(s)" |
+
+Render rule (helper `renderAmount(v: ValueDescriptor): string`):
+- `format === 'integer-with-suffix'` → `${amount} ${suffix}` (sem locale, plain integer)
+- default → `formatBRL(amount)` (BRL formatado)
+
+**Por que NAO so trocar para `formattedAmount?: string` prop:** porque o spec mantem invariante de que `amount: number` e a fonte unica de verdade (consumer nao formata, componente formata). Se passamos string ja formatada, perdemos type safety + re-render computacional + a/b testing com Intl locales.
 
 ## Token application
 
@@ -27,25 +57,33 @@ type DualValueCardProps = {
 - **"VOCE / CONTRAPARTE" label:** `--text-label` uppercase, color `var(--text-tertiary)`
 - **R$ amount:** `--text-mono-lg` JetBrains Mono 600, color `var(--text-primary)`
 - **Primary button:** bg `var(--brand-primary)`, color `var(--action-primary-fg)`, padding `var(--space-3) var(--space-5)`, radius `var(--radius-2)`, weight 600
+  - `primaryVariant="urgency"`: bg derivado da urgency prop — `var(--status-error-line)` (critical) | `var(--status-warning-line)` (warning) | `var(--brand-primary)` (info fallback)
 - **Secondary button:** bg transparent, border 1px `var(--border-default)`, color `var(--text-secondary)`
 
 ## Markup pattern
 
 ```tsx
+function renderAmount(v: ValueDescriptor): string {
+  return v.format === 'integer-with-suffix'
+    ? `${v.amount} ${v.suffix ?? ''}`.trim()
+    : formatBRL(v.amount);
+}
+
 <article className="dual-value-card" data-urgency={urgency}>
   <header className="dvc-header">
-    <h3 className="dvc-title">{titleSlot}</h3>
+    <h3 className="dvc-title">{title ?? 'Análise bilateral'}</h3>
+    {headerExtras /* opcional: ConstrutoraIndicator chip ou similar */}
     <Badge urgency={urgency}>{urgencyLabel}</Badge>
   </header>
   <dl className="dvc-values">
     <div className="dvc-row">
-      <dt className="dvc-label">VOCE</dt>
-      <dd className="dvc-amount">{formatBRL(valueEmpreiteiro.amount)}</dd>
+      <dt className="dvc-label">{empreiteiroLabel ?? 'EMPREITEIRO'}</dt>
+      <dd className="dvc-amount">{renderAmount(valueEmpreiteiro)}</dd>
       <dd className="dvc-detail">{valueEmpreiteiro.label}</dd>
     </div>
     <div className="dvc-row">
-      <dt className="dvc-label">CONTRAPARTE</dt>
-      <dd className="dvc-amount">{formatBRL(valueConstrutora.amount)}</dd>
+      <dt className="dvc-label">{construtoraLabel ?? 'CONSTRUTORA'}</dt>
+      <dd className="dvc-amount">{renderAmount(valueConstrutora)}</dd>
       <dd className="dvc-detail">{valueConstrutora.label}</dd>
     </div>
   </dl>
